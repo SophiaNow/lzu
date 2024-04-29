@@ -48,7 +48,7 @@ public class RuntimeEnvironment implements Runnable {
         // Perform deployment logic here
         JarFile jarFile = new JarFile(jarPath); // Runtime.Version to assure compatibility of loaded classes with current runtime?
         Enumeration<JarEntry> entry = jarFile.entries();
-        URL[] urls = {new URL("jar:file:" + jarPath +"!/")};
+        URL[] urls = {new URL("jar:file:" + jarPath + "!/")};
         // URL cl für JARS oder dirs mit .class-Dateien
         URLClassLoader loader = URLClassLoader.newInstance(urls);
         try {
@@ -62,15 +62,17 @@ public class RuntimeEnvironment implements Runnable {
                 }
                 String className = e.getName().substring(0, e.getName().length() - 6);
                 className = className.replace('/', '.');
+                System.out.println("className: " + className);
                 Class<?> c = loader.loadClass(className);
                 // Todo: Find starting class and store in component
                 // if (c.isAnnotationPresent(Startable.class)) {
                 // }
-                if (className.equals("Main.class")) {
+                if (className.endsWith("Main")) {
                     startingClass = c;
                     System.out.println("Invoke starting method!");
-                    Method main = c.getDeclaredMethod("main");
-                    main.invoke(null);
+                    Method main = c.getMethod("main", String[].class);
+                    String[] params = null;
+                    main.invoke(null, (Object) params);
                 }
             }
             Component component = new Component(name, urls[0], startingClass);
