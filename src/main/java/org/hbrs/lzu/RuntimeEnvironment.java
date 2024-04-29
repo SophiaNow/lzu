@@ -13,7 +13,7 @@ import java.util.jar.JarFile;
 public class RuntimeEnvironment implements Runnable {
     private Thread thread;
 
-    private HashMap<UUID, Component> components;
+    private HashMap<UUID, Component> components = new HashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     public void start() {
@@ -48,7 +48,7 @@ public class RuntimeEnvironment implements Runnable {
         // Perform deployment logic here
         JarFile jarFile = new JarFile(jarPath); // Runtime.Version to assure compatibility of loaded classes with current runtime?
         Enumeration<JarEntry> entry = jarFile.entries();
-        URL[] urls = {new URL("jar:" + jarPath + "!/")};
+        URL[] urls = {new URL("jar:file:" + jarPath +"!/")};
         // URL cl für JARS oder dirs mit .class-Dateien
         URLClassLoader loader = URLClassLoader.newInstance(urls);
         try {
@@ -68,6 +68,7 @@ public class RuntimeEnvironment implements Runnable {
                 // }
                 if (className.equals("Main.class")) {
                     startingClass = c;
+                    System.out.println("Invoke starting method!");
                     Method main = c.getDeclaredMethod("main");
                     main.invoke(null);
                 }

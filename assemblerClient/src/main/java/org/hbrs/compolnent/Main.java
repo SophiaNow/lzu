@@ -1,4 +1,4 @@
-package org.hbrs.assemblerClient;
+package org.hbrs.compolnent;
 
 public class Main {
 
