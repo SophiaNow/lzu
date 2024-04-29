@@ -1,5 +1,7 @@
 package org.hbrs.lzu;
 
+import java.net.URL;
+
 public class Component {
 
     public enum State {
@@ -12,27 +14,22 @@ public class Component {
     private State state;
     private final String name;
 
-    private final String url;
+    private final URL url;
 
-    private final String startingClass;
+    private Class<?> startingClass;
 
-    public Component(String name, String url, String startingClass) {
+    public Component(String name, URL url, Class<?> startingClass) {
         this.name = name;
         this.url = url;
-        // this.state = State.INITIALISED;
-        this.startingClass =startingClass;
+        this.state = State.DEPLOYED;
+        this.startingClass = startingClass;
+    }
+
+    public Component(String name, URL url) {
+        this(name, url, null);
     }
     public String getName() {
         return this.name;
-    }
-
-    public void deploy() {
-        Deployer deployer = new Deployer();
-        try {
-            deployer.deployComponent(url);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void stop() {
@@ -47,6 +44,10 @@ public class Component {
         System.out.println("Component " + this.name + " is executed!");
         this.state = State.RUNNING;
         return true;
+    }
+
+    public Class<?> getStartingClass() {
+        return this.startingClass;
     }
 
 }
