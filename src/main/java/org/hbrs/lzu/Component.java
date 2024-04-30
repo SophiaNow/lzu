@@ -2,7 +2,8 @@ package org.hbrs.lzu;
 
 import java.net.URL;
 
-public class Component {
+// Todo: for each comopnent different thread: istances
+public class Component extends Thread {
 
     public enum State {
         DEPLOYED, // loaded
@@ -14,25 +15,25 @@ public class Component {
     private State state;
     private final String name;
 
+    private final Thread thread;
+
     private final URL url;
 
     private Class<?> startingClass;
 
-    public Component(String name, URL url, Class<?> startingClass) {
+    public Component(String name, URL url, Class<?> startingClass, Thread thread) {
+        this.thread = thread;
         this.name = name;
         this.url = url;
         this.state = State.DEPLOYED;
         this.startingClass = startingClass;
     }
 
-    public Component(String name, URL url) {
-        this(name, url, null);
-    }
-    public String getName() {
+    public String getComponentName() {
         return this.name;
     }
 
-    public void stop() {
+    public void stopComponent() {
         //Todo: stop component?!
         this.state = State.STOPPED;
     }

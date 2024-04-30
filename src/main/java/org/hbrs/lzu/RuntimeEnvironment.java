@@ -6,22 +6,21 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class RuntimeEnvironment implements Runnable {
-    private Thread thread;
 
-    private HashMap<UUID, Component> components = new HashMap<>();
+    private ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public void start() {
-        this.thread = new Thread(this);
-        thread.start();
-    }
+    // public void start() {
+    //
+    // }
 
-    public void stop() {
+    public synchronized void stop() {
         this.running.set(false);
     }
 
@@ -75,7 +74,8 @@ public class RuntimeEnvironment implements Runnable {
                     main.invoke(null, (Object) params);
                 }
             }
-            Component component = new Component(name, urls[0], startingClass);
+            // Todo: current Thread an Componente übergeben? Oder Component öffnet eigenen Thread
+            Component component = new Component(name, urls[0], startingClass, Thread.currentThread());
             components.put(UUID.randomUUID(), component);
             System.out.println("New component added!");
         } catch (ClassNotFoundException e) {
