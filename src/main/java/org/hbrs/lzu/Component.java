@@ -9,8 +9,8 @@ import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Component implements Runnable {
-    // Todo: braucht man wirklich AtomicBoolean oder reicht einfach state Abfage?
+public class Component {
+    // Todo: braucht man wirklich AtomicBoolean oder reicht einfach state Abfrage?
     private final AtomicBoolean running = new AtomicBoolean(false);
 
 
@@ -30,15 +30,8 @@ public class Component implements Runnable {
     private final UUID id;
     private final Class<?> startingClass;
 
-    @Override
-    public void run() {
-        this.running.set(true);
-        try {
-            this.startComponent();
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private Thread thread;
+
 
     public Component(UUID id, URL url, Class<?> startingClass) {
         this.id = id;
@@ -46,32 +39,44 @@ public class Component implements Runnable {
         this.url = url;
         this.state = State.DEPLOYED;
         this.startingClass = startingClass;
+        this.thread = null;
     }
 
-    public void stopComponent() throws InvocationTargetException, IllegalAccessException {
-        this.state = State.STOPPED;
-        this.running.set(false);
+    public void stopComponent() throws InvocationTargetException, IllegalAccessException, InterruptedException {
+        // this.state = State.STOPPED;
+        // this.running.set(false);
         Method[] methods = startingClass.getDeclaredMethods();
         for (Method m : methods) {
             if (m.getAnnotation(Stop.class) != null) {
                 m.invoke(null);
             }
         }
-    }
-
-    private void startComponent() throws InvocationTargetException, IllegalAccessException {
-        Method[] methods = startingClass.getDeclaredMethods();
-        for (Method m : methods) {
-            if (m.getAnnotation(Start.class) != null) {
-                m.invoke(null);
-            }
+        if (thread != null && thread.isAlive()) {
+            thread.interrupt();
+            // Todo: so wichtig?
+            thread.join();
         }
-        System.out.println("IsRunning: "+ this.isRunning());
     }
 
-    public Class<?> getStartingClass() {
-        return this.startingClass;
+    public void startComponent(){
+        if (thread == null || !thread.isAlive()) {
+            thread = new Thread(() -> {
+                Method[] methods = startingClass.getDeclaredMethods();
+                for (Method m : methods) {
+                    if (m.getAnnotation(Start.class) != null) {
+                        try {
+                            m.invoke(null);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                System.out.println("IsRunning: "+ this.isRunning());
+            });
+            thread.start();
+        }
     }
+
 
     public boolean isRunning() {
         return this.running.get();

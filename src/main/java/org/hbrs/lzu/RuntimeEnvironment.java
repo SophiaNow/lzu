@@ -16,7 +16,7 @@ import java.util.jar.JarFile;
 public class RuntimeEnvironment {
 
     private static RuntimeEnvironment INSTANCE = null;
-    private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
+    // private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
     private final ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>();
 
     public static RuntimeEnvironment getInstance() {
@@ -38,8 +38,9 @@ public class RuntimeEnvironment {
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        threads.values().stream().filter(Thread::isAlive).forEach(Thread::interrupt);
     }
     // Todo: for every component own thread
     public UUID deployComponent(String jarPath) throws Exception {
@@ -73,12 +74,13 @@ public class RuntimeEnvironment {
                     if (m.isAnnotationPresent(Start.class)) {
                         startingClass = clazz;
                     }
+
                 }
                 // Thread mit Component-Instanz assoziieren
                 componentId = UUID.randomUUID();
                 Component component = new Component(componentId, urls[0], startingClass);
-                Thread thread = new Thread(component);
-                threads.put(componentId, thread);
+                // Thread thread = new Thread(component);
+                // threads.put(componentId, thread);
                 components.put(componentId, component);
                 System.out.println("New component added!");
             }
@@ -92,23 +94,25 @@ public class RuntimeEnvironment {
     }
 
     public void startComponent(UUID id) {
-        Thread thread = threads.get(id);
+        // Thread thread = threads.get(id);
         // Todo: Dopplung des States (Running / Alive) in Component und Thread
-        if (thread != null && !thread.isAlive()) {
-            thread.start();
-        }
+        // if (thread != null && !thread.isAlive()) {
+        //     thread.start();
+        // }
+        components.get(id).startComponent();
     }
 
-    public void stopComponent(UUID id) {
-        Thread thread = threads.get(id);
-        if (thread != null && thread.isAlive()) {
-            try {
-                components.get(id).stopComponent();
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            thread.interrupt();
-        }
+    public void stopComponent(UUID id) throws InterruptedException, InvocationTargetException, IllegalAccessException {
+        components.get(id).stopComponent();
+        // // Thread thread = threads.get(id);
+        // if (thread != null && thread.isAlive()) {
+        //     try {
+        //         components.get(id).stopComponent();
+        //     } catch (InvocationTargetException | IllegalAccessException e) {
+        //         throw new RuntimeException(e);
+        //     }
+        //     thread.interrupt();
+        // }
     }
 
     public void deleteComponent(UUID id) {

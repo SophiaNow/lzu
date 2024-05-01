@@ -1,8 +1,10 @@
 package org.hbrs.lzu;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 public class Main {
+
     public static void main(String[] args) {
         RuntimeEnvironment rte = RuntimeEnvironment.getInstance();
         UUID id = null;
@@ -12,7 +14,12 @@ public class Main {
             throw new RuntimeException(e);
         }
         rte.startComponent(id);
-        rte.stopComponent(id);
+        try {
+            rte.stopComponent(id);
+        } catch (InterruptedException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        rte.startComponent(id);
         rte.stop();
     }
 }
