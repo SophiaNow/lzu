@@ -1,45 +1,48 @@
 package org.hbrs.lzu;
 
+import annotations.Start;
+import annotations.Stop;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class RuntimeEnvironment implements Runnable {
+public class RuntimeEnvironment {
 
-    private ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
-    private final AtomicBoolean running = new AtomicBoolean(false);
+    private static RuntimeEnvironment INSTANCE = null;
+    private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
+    private final ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>();
 
-    // public void start() {
-    //
-    // }
-
-    public synchronized void stop() {
-        this.running.set(false);
-    }
-
-    @Override
-    public void run() {
-        this.running.set(true);
-        while (this.running.get()) {
-            try {
-                Thread.sleep(1000);
-                System.out.println("Waiting for input...");
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Runtime was stopped, failed to complete operation!");
-            }
+    public static RuntimeEnvironment getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new RuntimeEnvironment();
         }
+        return INSTANCE;
     }
 
+    private RuntimeEnvironment() {
+    }
+
+    public void stop() {
+        try {
+            for (Component comp : components.values()) {
+                if (comp.isRunning()) {
+                    comp.stopComponent();
+                }
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException();
+        }
+        threads.values().stream().filter(Thread::isAlive).forEach(Thread::interrupt);
+    }
     // Todo: for every component own thread
-    public synchronized void deployComponents(String jarPath) throws Exception {
+    public UUID deployComponent(String jarPath) throws Exception {
         // if (!running.get()) {
         //     System.out.println("Cannot deploy components, runtime is not running.");
         //     return;
@@ -50,6 +53,7 @@ public class RuntimeEnvironment implements Runnable {
         URL[] urls = {new URL("jar:file:" + jarPath + "!/")};
         // URL cl für JARS oder dirs mit .class-Dateien
         URLClassLoader loader = URLClassLoader.newInstance(urls);
+        UUID componentId = null;
         try {
             // Todo: Read out component/module name from module-info.java?
             String name = "Component";
@@ -62,31 +66,52 @@ public class RuntimeEnvironment implements Runnable {
                 String className = e.getName().substring(0, e.getName().length() - 6);
                 className = className.replace('/', '.');
                 System.out.println("className: " + className);
-                Class<?> c = loader.loadClass(className);
-                // Todo: Find starting class and store in component
-                // if (c.isAnnotationPresent(Startable.class)) {
-                // }
-                if (className.endsWith("Main")) {
-                    startingClass = c;
-                    System.out.println("Invoke starting method!");
-                    Method main = c.getMethod("main", String[].class);
-                    String[] params = null;
-                    main.invoke(null, (Object) params);
+                Class<?> clazz = loader.loadClass(className);
+                Method[] methods = clazz.getDeclaredMethods();
+                // Find starting class and store in component
+                for (Method m: methods) {
+                    if (m.isAnnotationPresent(Start.class)) {
+                        startingClass = clazz;
+                    }
                 }
+                // Thread mit Component-Instanz assoziieren
+                componentId = UUID.randomUUID();
+                Component component = new Component(componentId, urls[0], startingClass);
+                Thread thread = new Thread(component);
+                threads.put(componentId, thread);
+                components.put(componentId, component);
+                System.out.println("New component added!");
             }
-            // Todo: current Thread an Componente übergeben? Oder Component öffnet eigenen Thread
-            Component component = new Component(name, urls[0], startingClass, Thread.currentThread());
-            components.put(UUID.randomUUID(), component);
-            System.out.println("New component added!");
         } catch (ClassNotFoundException e) {
             throw new Exception(e);
         } finally {
             jarFile.close();
             loader.close();
         }
+        return componentId;
     }
 
-    public synchronized void deleteComponent() {
+    public void startComponent(UUID id) {
+        Thread thread = threads.get(id);
+        // Todo: Dopplung des States (Running / Alive) in Component und Thread
+        if (thread != null && !thread.isAlive()) {
+            thread.start();
+        }
+    }
+
+    public void stopComponent(UUID id) {
+        Thread thread = threads.get(id);
+        if (thread != null && thread.isAlive()) {
+            try {
+                components.get(id).stopComponent();
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            thread.interrupt();
+        }
+    }
+
+    public void deleteComponent(UUID id) {
         // Todo: deploy, start, stop, delete Component
     }
 

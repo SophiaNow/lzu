@@ -1,10 +1,20 @@
 package org.hbrs.lzu;
 
+import annotations.Start;
+import annotations.Stop;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// Todo: for each comopnent different thread: istances
-public class Component extends Thread {
+public class Component implements Runnable {
+    // Todo: braucht man wirklich AtomicBoolean oder reicht einfach state Abfage?
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
+
+    // State-Pattern anwenden
     public enum State {
         DEPLOYED, // loaded
         RUNNING,
@@ -13,42 +23,58 @@ public class Component extends Thread {
     }
 
     private State state;
-    private final String name;
-
-    private final Thread thread;
+    // private final String name;
 
     private final URL url;
 
-    private Class<?> startingClass;
+    private final UUID id;
+    private final Class<?> startingClass;
 
-    public Component(String name, URL url, Class<?> startingClass, Thread thread) {
-        this.thread = thread;
-        this.name = name;
+    @Override
+    public void run() {
+        this.running.set(true);
+        try {
+            this.startComponent();
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Component(UUID id, URL url, Class<?> startingClass) {
+        this.id = id;
+        // this.name = name;
         this.url = url;
         this.state = State.DEPLOYED;
         this.startingClass = startingClass;
     }
 
-    public String getComponentName() {
-        return this.name;
-    }
-
-    public void stopComponent() {
-        //Todo: stop component?!
+    public void stopComponent() throws InvocationTargetException, IllegalAccessException {
         this.state = State.STOPPED;
+        this.running.set(false);
+        Method[] methods = startingClass.getDeclaredMethods();
+        for (Method m : methods) {
+            if (m.getAnnotation(Stop.class) != null) {
+                m.invoke(null);
+            }
+        }
     }
 
-    public boolean execute() {
-        if (this.state != State.DEPLOYED) {
-            return false;
+    private void startComponent() throws InvocationTargetException, IllegalAccessException {
+        Method[] methods = startingClass.getDeclaredMethods();
+        for (Method m : methods) {
+            if (m.getAnnotation(Start.class) != null) {
+                m.invoke(null);
+            }
         }
-        System.out.println("Component " + this.name + " is executed!");
-        this.state = State.RUNNING;
-        return true;
+        System.out.println("IsRunning: "+ this.isRunning());
     }
 
     public Class<?> getStartingClass() {
         return this.startingClass;
+    }
+
+    public boolean isRunning() {
+        return this.running.get();
     }
 
 }
