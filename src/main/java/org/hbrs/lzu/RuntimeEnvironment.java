@@ -7,16 +7,16 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class RuntimeEnvironment {
 
     private static RuntimeEnvironment INSTANCE = null;
-    private final ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>();
+    private final HashMap<UUID, Component> components = new HashMap<>();
+    private final HashMap<UUID, Thread> threads = new HashMap<>();
 
     public static RuntimeEnvironment getInstance() {
         if (INSTANCE == null) {
