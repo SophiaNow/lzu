@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
         RuntimeEnvironment rte = RuntimeEnvironment.getInstance();
         UUID id = null;
         try {
@@ -15,11 +15,19 @@ public class Main {
         }
         rte.startComponent(id);
         try {
-            rte.stopComponent(id);
-        } catch (InterruptedException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            return;
         }
+        rte.stopComponent(id);
         rte.startComponent(id);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            return;
+        }
+        rte.stopComponent(id);
+        rte.deleteComponent(id);
         rte.stop();
     }
 }

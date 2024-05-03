@@ -1,7 +1,6 @@
 package org.hbrs.lzu;
 
 import annotations.Start;
-import annotations.Stop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,8 +15,8 @@ import java.util.jar.JarFile;
 public class RuntimeEnvironment {
 
     private static RuntimeEnvironment INSTANCE = null;
-    // private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>(); // Todo: concurrent Map of Threads und dann getCurrentThread() der Component
     private final ConcurrentHashMap<UUID, Component> components = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Thread> threads = new ConcurrentHashMap<>();
 
     public static RuntimeEnvironment getInstance() {
         if (INSTANCE == null) {
@@ -30,26 +29,19 @@ public class RuntimeEnvironment {
     }
 
     public void stop() {
-        try {
-            for (Component comp : components.values()) {
-                if (comp.isRunning()) {
-                    comp.stopComponent();
+        for (Component comp : components.values()) {
+            if (comp.getState() instanceof Running) {
+                comp.stopComponent();
+                Thread thread = threads.get(comp.getId());
+                if (thread.isAlive()) {
+                    thread.interrupt(); // wirklich interrupt?! (onhold?
                 }
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
-    // Todo: for every component own thread
+
     public UUID deployComponent(String jarPath) throws Exception {
-        // if (!running.get()) {
-        //     System.out.println("Cannot deploy components, runtime is not running.");
-        //     return;
-        // }
-        // Perform deployment logic here
-        JarFile jarFile = new JarFile(jarPath); // Runtime.Version to assure compatibility of loaded classes with current runtime?
+        JarFile jarFile = new JarFile(jarPath);
         Enumeration<JarEntry> entry = jarFile.entries();
         URL[] urls = {new URL("jar:file:" + jarPath + "!/")};
         // URL cl für JARS oder dirs mit .class-Dateien
@@ -66,11 +58,10 @@ public class RuntimeEnvironment {
                 }
                 String className = e.getName().substring(0, e.getName().length() - 6);
                 className = className.replace('/', '.');
-                System.out.println("className: " + className);
                 Class<?> clazz = loader.loadClass(className);
                 Method[] methods = clazz.getDeclaredMethods();
                 // Find starting class and store in component
-                for (Method m: methods) {
+                for (Method m : methods) {
                     if (m.isAnnotationPresent(Start.class)) {
                         startingClass = clazz;
                     }
@@ -79,8 +70,8 @@ public class RuntimeEnvironment {
                 // Thread mit Component-Instanz assoziieren
                 componentId = UUID.randomUUID();
                 Component component = new Component(componentId, urls[0], startingClass);
-                // Thread thread = new Thread(component);
-                // threads.put(componentId, thread);
+                Thread thread = new Thread(component);
+                threads.put(componentId, thread);
                 components.put(componentId, component);
                 System.out.println("New component added!");
             }
@@ -93,30 +84,32 @@ public class RuntimeEnvironment {
         return componentId;
     }
 
-    public void startComponent(UUID id) {
-        // Thread thread = threads.get(id);
-        // Todo: Dopplung des States (Running / Alive) in Component und Thread
-        // if (thread != null && !thread.isAlive()) {
-        //     thread.start();
-        // }
-        components.get(id).startComponent();
+    public void startComponent(UUID id) throws InvocationTargetException, IllegalAccessException {
+        Thread thread = threads.get(id);
+        if (thread.isAlive()) {
+            this.components.get(id).init();
+        } else {
+            thread.start();
+        }
     }
 
-    public void stopComponent(UUID id) throws InterruptedException, InvocationTargetException, IllegalAccessException {
-        components.get(id).stopComponent();
-        // // Thread thread = threads.get(id);
-        // if (thread != null && thread.isAlive()) {
-        //     try {
-        //         components.get(id).stopComponent();
-        //     } catch (InvocationTargetException | IllegalAccessException e) {
-        //         throw new RuntimeException(e);
-        //     }
-        //     thread.interrupt();
-        // }
+
+    public void stopComponent(UUID id) {
+        Thread thread = threads.get(id);
+        if (thread != null && !thread.isInterrupted()) {
+            components.get(id).stopComponent();
+        }
     }
 
     public void deleteComponent(UUID id) {
-        // Todo: deploy, start, stop, delete Component
+        Thread thread = threads.get(id);
+        if (thread != null && thread.isAlive()) {
+            // this.stopComponent(id);
+            this.components.get(id).deleteComponent(); // Todo: null check
+            thread.interrupt();
+            this.threads.remove(id);
+            this.components.remove(id);
+        }
     }
 
 }

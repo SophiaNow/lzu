@@ -1,80 +1,54 @@
 package org.hbrs.lzu;
 
-import annotations.Start;
-import annotations.Stop;
-
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Component {
-    // Todo: braucht man wirklich AtomicBoolean oder reicht einfach state Abfrage?
+public class Component implements Runnable {
     private final AtomicBoolean running = new AtomicBoolean(false);
-
-
-    // State-Pattern anwenden
-    public enum State {
-        DEPLOYED, // loaded
-        RUNNING,
-        STOPPED,
-        FAULTY
-    }
-
     private State state;
-    // private final String name;
-
     private final URL url;
-
     private final UUID id;
-    private final Class<?> startingClass;
-
-    private Thread thread;
-
+    protected final Class<?> startingClass;
 
     public Component(UUID id, URL url, Class<?> startingClass) {
         this.id = id;
         // this.name = name;
         this.url = url;
-        this.state = State.DEPLOYED;
         this.startingClass = startingClass;
-        this.thread = null;
+        this.state = new Deployed(this);
     }
 
-    public void stopComponent() throws InvocationTargetException, IllegalAccessException, InterruptedException {
-        // this.state = State.STOPPED;
-        // this.running.set(false);
-        Method[] methods = startingClass.getDeclaredMethods();
-        for (Method m : methods) {
-            if (m.getAnnotation(Stop.class) != null) {
-                m.invoke(null);
-            }
-        }
-        if (thread != null && thread.isAlive()) {
-            thread.interrupt();
-            // Todo: so wichtig?
-            thread.join();
-        }
-    }
-
-    public void startComponent(){
-        if (thread == null || !thread.isAlive()) {
-            thread = new Thread(() -> {
-                Method[] methods = startingClass.getDeclaredMethods();
-                for (Method m : methods) {
-                    if (m.getAnnotation(Start.class) != null) {
-                        try {
-                            m.invoke(null);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+    @Override
+    public void run() {
+        try {
+            this.init();
+            while (this.state instanceof Running || this.state instanceof Stopped) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
                 }
-                System.out.println("IsRunning: "+ this.isRunning());
-            });
-            thread.start();
+
+            }
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    public void init() throws InvocationTargetException, IllegalAccessException {
+        this.state.init();
+    }
+
+    public void stopComponent() {
+        try {
+            this.state.stopComponent();
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteComponent() {
+        this.state.deleteComponent();
     }
 
 
@@ -82,4 +56,15 @@ public class Component {
         return this.running.get();
     }
 
+    public UUID getId() {
+        return this.id;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return this.state;
+    }
 }
