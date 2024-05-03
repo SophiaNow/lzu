@@ -9,22 +9,22 @@ public class CLI {
     public CLI(RuntimeEnvironment rte) {
         this.rte = rte;
     }
-    public void delegateCommand(String command, String option) throws Exception {
+    public void delegateCommand(String command, String[] options) throws Exception {
         switch (command) {
             case "deploy":
-                new DeployCommand(this.rte, option).execute();
+                new DeployCommand(this.rte, options[1], options[2]).execute();
                 break;
             case "start":
-                UUID compId = UUID.fromString(option); // Assuming option is componentId
+                UUID compId = UUID.fromString(options[1]); // Assuming option is componentId
                 new StartCommand(this.rte, compId).execute();
                 break;
             // Implement cases for other commands
             case "stop":
-                UUID id = UUID.fromString(option); // Assuming option is componentId -> IllegalArgument
+                UUID id = UUID.fromString(options[1]); // Assuming option is componentId -> IllegalArgument
                 new StopCommand(this.rte, id).execute();
                 break;
             case "delete":
-                UUID uuid = UUID.fromString(option);
+                UUID uuid = UUID.fromString(options[1]);
                 new DeleteCommand(this.rte, uuid).execute();
                 System.out.println("Component " + uuid + " deleted!");
                 break;
@@ -49,9 +49,9 @@ public class CLI {
                 System.out.println("Bye!");
                 return;
             }
-            String option = "";
+            String[] option = {""};
             if (input.length >= 2) {
-                option = input[1];
+                option = input;
             }
             try {
                 cli.delegateCommand(input[0], option);

@@ -11,6 +11,7 @@ public class Component implements Runnable {
     private final URL url;
     private final UUID id;
     protected final Class<?> startingClass;
+    private String name;
 
     public Component(UUID id, URL url, Class<?> startingClass) {
         this.id = id;
@@ -66,5 +67,19 @@ public class Component implements Runnable {
 
     public State getState() {
         return this.state;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        String string = "[";
+        string += this.name + ", ";
+        string += this.id + ", ";
+        String state = this.state.getClass().getName();
+        string += state.substring(state.lastIndexOf('.') + 1) + "]";
+        return string;
     }
 }

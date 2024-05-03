@@ -40,7 +40,7 @@ public class RuntimeEnvironment {
         }
     }
 
-    public UUID deployComponent(String jarPath) throws Exception {
+    public UUID deployComponent(String jarPath, String name) throws Exception {
         JarFile jarFile = new JarFile(jarPath);
         Enumeration<JarEntry> entry = jarFile.entries();
         URL[] urls = {new URL("jar:file:" + jarPath + "!/")};
@@ -48,8 +48,6 @@ public class RuntimeEnvironment {
         URLClassLoader loader = URLClassLoader.newInstance(urls);
         UUID componentId = null;
         try {
-            // Todo: Read out component/module name from module-info.java?
-            String name = "Component";
             Class<?> startingClass = null;
             while (entry.hasMoreElements()) {
                 JarEntry e = entry.nextElement();
@@ -71,6 +69,7 @@ public class RuntimeEnvironment {
                 // Thread mit Component-Instanz assoziieren
                 componentId = UUID.randomUUID();
                 Component component = new Component(componentId, urls[0], startingClass);
+                component.setName(name);
                 Thread thread = new Thread(component);
                 threads.put(componentId, thread);
                 components.put(componentId, component);
@@ -95,6 +94,7 @@ public class RuntimeEnvironment {
         } else {
             thread.start();
         }
+        System.out.println("Component:\n" + components.get(id).toString());
     }
 
 
@@ -123,5 +123,7 @@ public class RuntimeEnvironment {
             this.components.remove(id);
         }
     }
+
+
 
 }

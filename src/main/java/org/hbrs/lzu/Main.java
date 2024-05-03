@@ -11,8 +11,8 @@ public class Main {
         UUID id1 = null;
         UUID id2 = null;
         try {
-            id1 = rte.deployComponent(jarPath);
-            id2 = rte.deployComponent(jarPath);
+            id1 = rte.deployComponent(jarPath, "comp1");
+            id2 = rte.deployComponent(jarPath, "comp2");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
