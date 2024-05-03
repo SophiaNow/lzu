@@ -6,28 +6,43 @@ import java.util.UUID;
 public class Main {
 
     public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
+        String jarPath = "C:\\Users\\sophi\\Informatik\\2\\OOKA\\Uebungen\\Uebung2\\lzu\\component\\target\\component-1.0-SNAPSHOT.jar";
         RuntimeEnvironment rte = RuntimeEnvironment.getInstance();
-        UUID id = null;
+        UUID id1 = null;
         try {
-            id = rte.deployComponent("C:\\Users\\sophi\\Informatik\\2\\OOKA\\Uebungen\\Uebung2\\lzu\\component\\target\\component-1.0-SNAPSHOT.jar");
+            id1 = rte.deployComponent(jarPath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        rte.startComponent(id);
+        rte.startComponent(id1);
         try {
             Thread.sleep(5000);
         } catch (InterruptedException ex) {
             return;
         }
-        rte.stopComponent(id);
-        rte.startComponent(id);
+        rte.stopComponent(id1);
+        rte.startComponent(id1);
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             return;
         }
-        rte.stopComponent(id);
-        rte.deleteComponent(id);
-        rte.stop();
+        rte.stopComponent(id1);
+        rte.deleteComponent(id1);
+        UUID id2 = null;
+        try {
+            id2 = rte.deployComponent(jarPath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        rte.startComponent(id2);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            return;
+        }
+        rte.stopComponent(id2);
+        rte.deleteComponent(id2);
+        // rte.stop();
     }
 }

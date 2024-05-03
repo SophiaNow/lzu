@@ -106,7 +106,7 @@ public class RuntimeEnvironment {
         if (thread != null && thread.isAlive()) {
             // this.stopComponent(id);
             this.components.get(id).deleteComponent(); // Todo: null check
-            thread.interrupt();
+            thread.interrupt(); // Nur zur Sicherheit
             this.threads.remove(id);
             this.components.remove(id);
         }
