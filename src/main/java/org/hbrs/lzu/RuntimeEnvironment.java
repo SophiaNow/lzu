@@ -64,6 +64,7 @@ public class RuntimeEnvironment {
                 for (Method m : methods) {
                     if (m.isAnnotationPresent(Start.class)) {
                         startingClass = clazz;
+                        System.out.println("Classloader: " + clazz.getClassLoader());
                     }
 
                 }
@@ -88,6 +89,9 @@ public class RuntimeEnvironment {
         Thread thread = threads.get(id);
         if (thread.isAlive()) {
             this.components.get(id).init();
+            // synchronized (components.get(id)) {
+            //     components.get(id).notify();
+            // }
         } else {
             thread.start();
         }
@@ -98,12 +102,20 @@ public class RuntimeEnvironment {
         Thread thread = threads.get(id);
         if (thread != null && !thread.isInterrupted()) {
             components.get(id).stopComponent();
+            // try {
+            //     synchronized (components.get(id)) {
+            //         components.get(id).wait();
+            //     }
+            // } catch (InterruptedException e) {
+            //     thread.interrupt();
+            // }
+            threads.put(id, new Thread(components.get(id))); // Todo: New component for stopped component
         }
     }
 
     public void deleteComponent(UUID id) {
         Thread thread = threads.get(id);
-        if (thread != null && thread.isAlive()) {
+        if (thread != null) { // vorher: && isAlive(), jetzt nach Stop neuer Thread => nicht Alive
             // this.stopComponent(id);
             this.components.get(id).deleteComponent(); // Todo: null check
             thread.interrupt(); // Nur zur Sicherheit
