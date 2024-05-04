@@ -102,6 +102,7 @@ public class RuntimeEnvironment {
         Thread thread = threads.get(id);
         if (thread != null && !thread.isInterrupted()) {
             components.get(id).stopComponent();
+            thread.interrupt();
             // try {
             //     synchronized (components.get(id)) {
             //         components.get(id).wait();
