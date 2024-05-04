@@ -86,7 +86,7 @@ public class RuntimeEnvironment {
 
     public void startComponent(UUID id) throws InvocationTargetException, IllegalAccessException {
         Thread thread = threads.get(id);
-        if (thread.isAlive()) {
+        if (thread != null && thread.isAlive()) {
             this.components.get(id).init();
             // synchronized (components.get(id)) {
             //     components.get(id).notify();
@@ -98,8 +98,9 @@ public class RuntimeEnvironment {
     }
 
 
-    public void stopComponent(UUID id) {
+    public boolean stopComponent(UUID id) {
         Thread thread = threads.get(id);
+        boolean stopped = false;
         if (thread != null && !thread.isInterrupted()) {
             components.get(id).stopComponent();
             thread.interrupt();
@@ -112,19 +113,33 @@ public class RuntimeEnvironment {
             // }
             threads.put(id, new Thread(components.get(id))); // Todo: New component for stopped component
         }
+        return stopped;
     }
 
-    public void deleteComponent(UUID id) {
+    public boolean deleteComponent(UUID id) {
         Thread thread = threads.get(id);
+        boolean disposable = false;
         if (thread != null) { // vorher: && isAlive(), jetzt nach Stop neuer Thread => nicht Alive
-            // this.stopComponent(id);
-            this.components.get(id).deleteComponent(); // Todo: null check
-            thread.interrupt(); // Nur zur Sicherheit
-            this.threads.remove(id);
-            this.components.remove(id);
+                disposable = this.components.get(id).deleteComponent();
+                if (disposable) { // wenn Component Running, nicht löschbar
+                thread.interrupt(); // Nur zur Sicherheit
+                this.threads.remove(id);
+                this.components.remove(id);
+            }
         }
+        return disposable;
+    }
+    public HashMap<UUID, Component> getComponents() {
+        return this.components;
     }
 
+    public HashMap<UUID, Thread> getThreads() {
+        return this.threads;
+    }
 
+    public State getComponentState(UUID uuid) {
+        Component comp = this.components.get(uuid);
+        return comp.getState();
 
+    }
 }

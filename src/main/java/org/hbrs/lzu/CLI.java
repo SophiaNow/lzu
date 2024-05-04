@@ -10,6 +10,7 @@ public class CLI {
         this.rte = rte;
     }
     public void delegateCommand(String command, String[] options) throws Exception {
+        UUID uuid = null;
         switch (command) {
             case "deploy":
                 new DeployCommand(this.rte, options[1], options[2]).execute();
@@ -20,13 +21,16 @@ public class CLI {
                 break;
             // Implement cases for other commands
             case "stop":
-                UUID id = UUID.fromString(options[1]); // Assuming option is componentId -> IllegalArgument
-                new StopCommand(this.rte, id).execute();
+                uuid = UUID.fromString(options[1]); // Assuming option is componentId -> IllegalArgument
+                new StopCommand(this.rte, uuid).execute();
                 break;
             case "delete":
-                UUID uuid = UUID.fromString(options[1]);
+                uuid = UUID.fromString(options[1]);
                 new DeleteCommand(this.rte, uuid).execute();
-                System.out.println("Component " + uuid + " deleted!");
+                break;
+            case "state":
+                uuid = UUID.fromString(options[1]);
+                new GetStateCommand(this.rte, uuid).execute();
                 break;
             case "help":
                 System.out.println("You can either stop the runtime ('exit') or\n- deploy\n- start \n- stop\n- delete\n a component.");

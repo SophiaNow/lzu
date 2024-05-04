@@ -48,8 +48,8 @@ public class Component implements Runnable {
         }
     }
 
-    public void deleteComponent() {
-        this.state.deleteComponent();
+    public boolean deleteComponent() {
+        return this.state.deleteComponent();
     }
 
 

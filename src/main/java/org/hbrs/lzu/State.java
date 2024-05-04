@@ -14,6 +14,6 @@ public abstract class State {
 
     public abstract void stopComponent() throws InvocationTargetException, IllegalAccessException;
 
-    public abstract void deleteComponent();
+    public abstract boolean deleteComponent();
 
 }

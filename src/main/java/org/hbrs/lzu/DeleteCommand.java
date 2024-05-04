@@ -13,6 +13,11 @@ public class DeleteCommand implements Command{
 
     @Override
     public void execute() throws Exception {
-        this.rte.deleteComponent(id);
+        if (!this.rte.deleteComponent(id)) {
+            System.out.println("Component " + this.id + " is still running!");
+        } else {
+            System.out.println("Component " + this.id + " deleted!");
+
+        }
     }
 }
