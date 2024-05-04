@@ -1,4 +1,7 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.cli;
+
+import org.hbrs.lzu.RuntimeEnvironment;
+import org.hbrs.lzu.cli.Command;
 
 public class DeployCommand implements Command {
     private final RuntimeEnvironment environment;

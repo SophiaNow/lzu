@@ -1,5 +1,10 @@
 package org.hbrs.lzu;
 
+import org.hbrs.lzu.state.Deployed;
+import org.hbrs.lzu.state.Running;
+import org.hbrs.lzu.state.State;
+import org.hbrs.lzu.state.Stopped;
+
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.UUID;

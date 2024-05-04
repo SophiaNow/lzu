@@ -1,4 +1,6 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.cli;
+
+import org.hbrs.lzu.*;
 
 import java.util.Scanner;
 import java.util.UUID;

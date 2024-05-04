@@ -1,8 +1,11 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.state;
+
+import org.hbrs.lzu.Component;
+import org.hbrs.lzu.state.State;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class Disposed extends State{
+public class Disposed extends State {
 
     public Disposed(Component component) {
         super(component);

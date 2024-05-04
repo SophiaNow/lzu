@@ -1,4 +1,6 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.state;
+
+import org.hbrs.lzu.Component;
 
 import java.lang.reflect.InvocationTargetException;
 

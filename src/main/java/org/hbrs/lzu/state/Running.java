@@ -1,6 +1,7 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.state;
 
 import annotations.Stop;
+import org.hbrs.lzu.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

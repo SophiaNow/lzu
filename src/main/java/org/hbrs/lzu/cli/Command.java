@@ -1,4 +1,4 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.cli;
 
 public interface Command {
 

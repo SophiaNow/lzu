@@ -1,6 +1,10 @@
 package org.hbrs.lzu;
 
 
+import org.hbrs.lzu.state.Deployed;
+import org.hbrs.lzu.state.Disposed;
+import org.hbrs.lzu.state.Running;
+import org.hbrs.lzu.state.Stopped;
 import org.junit.jupiter.api.*;
 
 import java.lang.reflect.InvocationTargetException;

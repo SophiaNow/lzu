@@ -1,8 +1,11 @@
-package org.hbrs.lzu;
+package org.hbrs.lzu.cli;
+
+import org.hbrs.lzu.RuntimeEnvironment;
+import org.hbrs.lzu.cli.Command;
 
 import java.util.UUID;
 
-public class DeleteCommand implements Command{
+public class DeleteCommand implements Command {
     private final UUID id;
     private final RuntimeEnvironment rte;
 
