@@ -18,7 +18,7 @@ public class Running extends State {
 
     @Override
     public void stopComponent() throws InvocationTargetException, IllegalAccessException {
-        Method[] methods = this.component.startingClass.getDeclaredMethods();
+        Method[] methods = this.component.getStartingClass().getDeclaredMethods();
         for (Method m : methods) {
             if (m.getAnnotation(Stop.class) != null) {
                 m.invoke(null);

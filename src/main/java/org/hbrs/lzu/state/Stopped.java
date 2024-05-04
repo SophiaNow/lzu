@@ -18,7 +18,7 @@ public class Stopped extends State {
     @Override
     public void init() throws InvocationTargetException, IllegalAccessException {
         // Nothing;
-        Method[] methods = this.component.startingClass.getDeclaredMethods();
+        Method[] methods = this.component.getStartingClass().getDeclaredMethods();
         for (Method m : methods) {
             if (m.getAnnotation(Start.class) != null) {
                 m.invoke(null);

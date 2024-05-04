@@ -59,7 +59,7 @@ public class RuntimeEnvironment {
                 }
                 String className = e.getName().substring(0, e.getName().length() - 6);
                 className = className.replace('/', '.');
-                Class<?> clazz = loader.loadClass(className);
+                Class clazz = loader.loadClass(className);
                 Method[] methods = clazz.getDeclaredMethods();
                 // Find starting class and store in component
                 for (Method m : methods) {

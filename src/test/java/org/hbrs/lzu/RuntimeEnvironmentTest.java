@@ -49,8 +49,9 @@ class RuntimeEnvironmentTest {
             assertEquals(comp2Name, comp2.getName(), "Component name false!");
             assert comp2.getState() instanceof Deployed;
             Class<?> class2 = comp2.startingClass;
-            Class<?> class1 = rte.getComponents().get(comp2ID).startingClass;
-            // assertNotEquals(class1, class2);
+            Class<?> class1 = rte.getComponents().get(comp1ID).startingClass;
+            assertNotEquals(class1, class2);
+            assertNotEquals(class1.getDeclaredConstructor().newInstance(), class1.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

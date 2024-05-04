@@ -74,6 +74,10 @@ public class Component implements Runnable {
         return this.name;
     }
 
+    public Class<?> getStartingClass() {
+        return this.startingClass;
+    }
+
     @Override
     public String toString() {
         String string = "[";
