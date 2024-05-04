@@ -3,10 +3,8 @@ package org.hbrs.lzu;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Component implements Runnable {
-    private final AtomicBoolean running = new AtomicBoolean(false);
     private State state;
     private final URL url;
     private final UUID id;
@@ -15,7 +13,6 @@ public class Component implements Runnable {
 
     public Component(UUID id, URL url, Class<?> startingClass) {
         this.id = id;
-        // this.name = name;
         this.url = url;
         this.startingClass = startingClass;
         this.state = new Deployed(this);
@@ -52,11 +49,6 @@ public class Component implements Runnable {
         return this.state.deleteComponent();
     }
 
-
-    public boolean isRunning() {
-        return this.running.get();
-    }
-
     public UUID getId() {
         return this.id;
     }
@@ -71,6 +63,10 @@ public class Component implements Runnable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     @Override
