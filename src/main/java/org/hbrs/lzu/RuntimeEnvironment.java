@@ -139,7 +139,9 @@ public class RuntimeEnvironment {
 
     public State getComponentState(UUID uuid) {
         Component comp = this.components.get(uuid);
+        if (comp == null) {
+            return new Disposed(null);
+        }
         return comp.getState();
-
     }
 }
