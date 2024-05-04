@@ -29,6 +29,6 @@ public class Deployed extends State {
 
     @Override
     public void deleteComponent() {
-        // Do nothing!
+        this.component.setState(new Disposed(this.component));
     }
 }
