@@ -1,2 +1,4 @@
-annotations\Start.class
+annotations\Inject.class
 annotations\Stop.class
+annotations\Logger.class
+annotations\Start.class

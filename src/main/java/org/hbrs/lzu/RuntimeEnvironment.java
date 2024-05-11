@@ -1,10 +1,13 @@
 package org.hbrs.lzu;
 
+import annotations.Inject;
 import annotations.Start;
+import org.hbrs.lzu.logging.LoggerImpl;
 import org.hbrs.lzu.state.Disposed;
 import org.hbrs.lzu.state.Running;
 import org.hbrs.lzu.state.State;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -61,6 +64,8 @@ public class RuntimeEnvironment {
                 className = className.replace('/', '.');
                 Class clazz = loader.loadClass(className);
                 Method[] methods = clazz.getDeclaredMethods();
+                boolean injectLogger = doInjectLogger(clazz);
+
                 // Find starting class and store in component
                 for (Method m : methods) {
                     if (m.isAnnotationPresent(Start.class)) {
@@ -68,7 +73,11 @@ public class RuntimeEnvironment {
                         System.out.println("Classloader: " + clazz.getClassLoader());
                     }
 
+                    if(injectLogger){
+                        injectLogger(m);
+                    }
                 }
+
                 // Thread mit Component-Instanz assoziieren
                 componentId = UUID.randomUUID();
                 Component component = new Component(componentId, urls[0], startingClass);
@@ -87,15 +96,35 @@ public class RuntimeEnvironment {
         return componentId;
     }
 
+    private static void injectLogger(Method m) {
+        if("setLogger".equals(m.getName())){
+            try {
+                m.invoke(null, new LoggerImpl());
+            } catch (IllegalAccessException e) {
+                System.err.println("Method setLogger is not public.");
+            } catch (InvocationTargetException e) {
+                System.err.println("Method setLogger is not invokable, because of missing/wrong logger parameter.");
+            }
+        }
+    }
+
+    private static boolean doInjectLogger(Class clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field f: fields){
+            Inject annotation = f.getAnnotation(Inject.class);
+            if (annotation != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void startComponent(UUID id) throws InvocationTargetException, IllegalAccessException {
         Thread thread = threads.get(id);
         if (thread != null && thread.isAlive()) {
             this.components.get(id).init();
-            // synchronized (components.get(id)) {
-            //     components.get(id).notify();
-            // }
         } else {
-            thread.start();
+            thread.start(); //TODO Error handling, if component assembler did not deploy component / gave wrong id
         }
         System.out.println("Component:\n" + components.get(id).toString());
     }
@@ -107,13 +136,6 @@ public class RuntimeEnvironment {
         if (thread != null && !thread.isInterrupted()) {
             components.get(id).stopComponent();
             thread.interrupt();
-            // try {
-            //     synchronized (components.get(id)) {
-            //         components.get(id).wait();
-            //     }
-            // } catch (InterruptedException e) {
-            //     thread.interrupt();
-            // }
             threads.put(id, new Thread(components.get(id))); // Todo: New component for stopped component
         }
         return stopped;

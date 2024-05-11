@@ -16,8 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RuntimeEnvironmentTest {
 
     private static RuntimeEnvironment rte = RuntimeEnvironment.getInstance();
-    ;
-    private static String jarPath = "C:\\Users\\sophi\\Informatik\\2\\OOKA\\Uebungen\\Uebung2\\lzu\\component\\target\\component-1.0-SNAPSHOT.jar";
+    private static String jarPath = "C:\\Workspaces\\OOKA\\SophiaNow\\component\\target\\component-1.0-SNAPSHOT.jar";
     private static UUID comp1ID = null;
     private static UUID comp2ID = null;
     private static String comp1Name = "component1";
