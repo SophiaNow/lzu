@@ -2,9 +2,6 @@ package org.hbrs.lzu.state;
 
 import annotations.Start;
 import org.hbrs.lzu.Component;
-import org.hbrs.lzu.state.Disposed;
-import org.hbrs.lzu.state.Running;
-import org.hbrs.lzu.state.State;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,6 +10,11 @@ public class Stopped extends State {
 
     public Stopped(Component component) {
         super(component);
+    }
+
+    @Override
+    public String getStateName() {
+        return "Stopped";
     }
 
     @Override

@@ -12,6 +12,8 @@ public abstract class State {
         this.component = component;
     }
 
+    public abstract String getStateName();
+ 
     public abstract void init() throws InvocationTargetException, IllegalAccessException;
 
     public abstract void stopComponent() throws InvocationTargetException, IllegalAccessException;

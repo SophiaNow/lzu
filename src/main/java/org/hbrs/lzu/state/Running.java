@@ -13,9 +13,14 @@ public class Running extends State {
     }
 
     @Override
-    public void init() {
+    public String getStateName() {
+        return "Running";
     }
 
+    @Override
+    public void init() {
+    }
+ 
     @Override
     public void stopComponent() throws InvocationTargetException, IllegalAccessException {
         Method[] methods = this.component.getStartingClass().getDeclaredMethods();
