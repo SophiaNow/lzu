@@ -7,6 +7,7 @@ import org.hbrs.lzu.state.Running;
 import org.hbrs.lzu.state.Stopped;
 import org.junit.jupiter.api.*;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
@@ -15,13 +16,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RuntimeEnvironmentTest {
 
+    public static final File CACHE_FILE = new File("cache.txt");
     private static RuntimeEnvironment rte = RuntimeEnvironment.getInstance();
-    private static String jarPath = "C:\\Workspaces\\OOKA\\SophiaNow\\component\\target\\component-1.0-SNAPSHOT.jar";
+    private static String jarPath = "component\\target\\component-1.0-SNAPSHOT.jar";
     private static UUID comp1ID = null;
     private static UUID comp2ID = null;
     private static String comp1Name = "component1";
     private static String comp2Name = "component2";
 
+    @BeforeAll
+    static void init() {
+        CACHE_FILE.delete();
+    }
 
     @Test
     @Order(1)
@@ -121,5 +127,7 @@ class RuntimeEnvironmentTest {
         rte = null;
         comp1ID = null;
         comp2ID = null;
+
+        CACHE_FILE.delete();
     }
 }

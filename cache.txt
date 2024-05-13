@@ -1,5 +1,0 @@
-c510b56e-ec32-4e31-aa60-0082cb294e77,testassaf,jar:file:c:\workspaces\ooka\sophianow\component\target\component-1.0-snapshot.jar!/,Deployed
-7dc9dff5-1479-435f-ab1d-3d8cf132553b,test2,jar:file:c:\workspaces\ooka\sophianow\component\target\component-1.0-snapshot.jar!/,Running
-78d70fb6-2dd9-4571-bafc-5dbf5839228c,test3,jar:file:c:\workspaces\ooka\sophianow\component\target\component-1.0-snapshot.jar!/,Stopped
-2053abd5-69c3-40d4-9ddb-ff54fb6e65dc,test4,jar:file:c:\workspaces\ooka\sophianow\component\target\component-1.0-snapshot.jar!/,Disposed
-d9fb4b5d-77a6-4114-a43b-242b61cd44d6,asfas,jar:file:c:\workspaces\ooka\sophianow\component\target\component-1.0-snapshot.jar!/,Deployed

@@ -1,9 +1,7 @@
 package org.hbrs.lzu;
 
 import org.hbrs.lzu.state.Deployed;
-import org.hbrs.lzu.state.Running;
 import org.hbrs.lzu.state.State;
-import org.hbrs.lzu.state.Stopped;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -31,12 +29,6 @@ public class Component implements Runnable {
     public void run() {
         try {
             this.init();
-            while (this.state instanceof Running || this.state instanceof Stopped) {
-                if (Thread.currentThread().isInterrupted()) {
-                    return;
-                }
-
-            }
         } catch (InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -112,11 +104,6 @@ public class Component implements Runnable {
 
             // Delete the original file
             Files.delete(inputFile.toPath());
-
-//            if (!inputFile.delete()) {
-//                System.err.println("Failed to delete the original file.");
-//                return;
-//            }
 
             // Rename the temporary file to the original file name
             if (!tempFile.renameTo(inputFile)) {

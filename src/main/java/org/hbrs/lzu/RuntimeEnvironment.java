@@ -230,10 +230,11 @@ public class RuntimeEnvironment {
         if (thread.isAlive()) {
             this.components.get(id).init();
         } else {
-            thread.start(); //TODO Error handling, if component assembler did not deploy component / gave wrong id
+            thread.start();
         }
 
-        System.out.println("Component:\n" + components.get(id).toString());
+        joinThread(thread);
+        System.out.println("Component started:\n" + components.get(id).toString());
     }
 
 
@@ -242,6 +243,7 @@ public class RuntimeEnvironment {
         boolean stopped = false;
         if (thread != null && !thread.isInterrupted()) {
             components.get(id).stopComponent();
+            joinThread(thread);
             thread.interrupt();
             threads.put(id, new Thread(components.get(id)));
         }
@@ -251,15 +253,31 @@ public class RuntimeEnvironment {
     public boolean deleteComponent(UUID id) {
         Thread thread = threads.get(id);
         boolean disposable = false;
-        if (thread != null) { // vorher: && isAlive(), jetzt nach Stop neuer Thread => nicht Alive
+        if (thread != null) {
+            joinThread(thread);
             disposable = this.components.get(id).deleteComponent();
+            Component removedComponent = null;
             if (disposable) { // wenn Component Running, nicht löschbar
                 thread.interrupt(); // Nur zur Sicherheit
                 this.threads.remove(id);
-                this.components.remove(id);
+                removedComponent = this.components.remove(id);
+            }
+
+            joinThread(thread);
+            if (removedComponent != null) {
+                System.out.println("Component deleted:\n" + removedComponent);
             }
         }
         return disposable;
+    }
+
+    private static void joinThread(Thread thread) {
+        try {
+            // Wait for the thread to finish any other previously called command
+            thread.join();
+        } catch (InterruptedException e) {
+            System.out.println("Thread interrupted");
+        }
     }
 
     public HashMap<UUID, Component> getComponents() {
